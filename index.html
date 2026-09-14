@@ -44,17 +44,20 @@
       document.getElementById('form').style.display = 'block';
     });
 
-    document.getElementById('btn-send').addEventListener('click', async () => {
-      const time = document.getElementById('date-heure').value;
-      const msg = document.getElementById('msg').value;
-      
-      await fetch('/schedule', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ subscription: sub, time: time, message: msg })
-      });
-      alert('Notification planifiée ! Vous pouvez quitter l\'app.');
-    });
+  document.getElementById('btn-send').addEventListener('click', async () => {
+  const msg = document.getElementById('msg').value || "Hello depuis Netlify !";
+  
+  // On cible le dossier par défaut des fonctions Netlify
+  await fetch('/.netlify/functions/send', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      subscription: sub, 
+      message: msg 
+    })
+  });
+  alert('Notification envoyée (ferme vite l\'app pour la voir en background !)');
+});
   </script>
 </body>
 </html>
