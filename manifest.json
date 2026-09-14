@@ -1,0 +1,7 @@
+{
+  "name": "Test Notif",
+  "short_name": "Notif",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [{"src": "https://via.placeholder.com/192", "sizes": "192x192", "type": "image/png"}]
+}
