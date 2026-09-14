@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Push iPhone</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <h2>Test Notif PWA</h2>
+  <button id="btn-sub">1. Activer les notifications</button>
+  
+  <div id="form" style="display:none; margin-top: 20px;">
+    <input type="datetime-local" id="date-heure">
+    <input type="text" id="msg" placeholder="Votre message">
+    <button id="btn-send">2. Planifier</button>
+  </div>
+
+  <script>
+    const VAPID_PUBLIC = "BBarm1glOtvl6p5yBWu8wRAYrYunZAcX98Fn-3tgKvinTzCs-qgE5Bsm0rDfTmx-rElPYCopRPu8yrGInXl-fWE";
+    let sub = null;
+
+    // Conversion clé VAPID
+    const urlB64ToUint8Array = base64String => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    };
+
+    document.getElementById('btn-sub').addEventListener('click', async () => {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') return alert('Refusé');
+      
+      const swReg = await navigator.serviceWorker.register('sw.js');
+      sub = await swReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC)
+      });
+      
+      document.getElementById('btn-sub').style.display = 'none';
+      document.getElementById('form').style.display = 'block';
+    });
+
+    document.getElementById('btn-send').addEventListener('click', async () => {
+      const time = document.getElementById('date-heure').value;
+      const msg = document.getElementById('msg').value;
+      
+      await fetch('/schedule', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ subscription: sub, time: time, message: msg })
+      });
+      alert('Notification planifiée ! Vous pouvez quitter l\'app.');
+    });
+  </script>
+</body>
+</html>
